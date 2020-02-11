@@ -11,6 +11,8 @@ import * as DEBUG from './DebugHelper.js';
 import * as GUIVR from './GuiVR.js';
 import * as ANIMATOR from './Animator.js';
 import * as USER from './User.js';
+import * as FERRIS from './FerrisWheel.js'
+import { OrbitControls } from '../extern/OrbitControls.js';
 // Imports for model loading.  The import depends on the model file type.
 // There are other model types that can be loaded.
 import {FBXLoader}  from '../extern/examples/jsm/loaders/FBXLoader.js'; 
@@ -295,10 +297,6 @@ function initExhibit4(userRig){
 					 })
 		  ];
     var sign = new GUIVR.GuiVRMenu(buttons);
-    sign.position.x = 1;
-    sign.position.z = -2;
-    sign.position.y = 0.7;
-    signRig.add(sign);
     inited = true;
 
     // Pose exhibit.
@@ -306,6 +304,19 @@ function initExhibit4(userRig){
     exhibit.position.z = -15;
     exhibit.position.x = 3;
     
+    scene.add(exhibit);
+}
+
+
+function initExhibit5(userRig){
+
+    var exhibit = new FERRIS.FerrisWheel(scene, userRig, animatedObjects, 8, 6);
+
+    // Pose exhibit.
+    exhibit.rotation.y = THREE.Math.degToRad(90);
+    exhibit.position.z = -25;
+    exhibit.position.x = -3;
+
     scene.add(exhibit);
 }
 
@@ -345,7 +356,8 @@ function initExhibits(userRig){
     initExhibit1(userRig);
     initExhibit2(userRig);
     initExhibit3(userRig);
-    initExhibit4(userRig);  
+    initExhibit4(userRig); 
+    initExhibit5(userRig); 
 }
 
 function init() {
