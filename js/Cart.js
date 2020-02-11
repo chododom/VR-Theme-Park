@@ -3,7 +3,7 @@ import { GuiVR } from './GuiVR.js';
 
 export class Cart extends GuiVR{
 
-    constructor(userRig, speed, y, animatedObjects){
+    constructor(userRig, signRig, speed, y, animatedObjects){
         super();
 
         const loader = new THREE.TextureLoader();
@@ -27,11 +27,13 @@ export class Cart extends GuiVR{
 
 	    this.collider = cart;
         this.userRig = userRig;
+        this.signRig = signRig;
     }
 
     collide(uv, pt){
         // When the user clicks on this platform, move the user to it.
         this.add(this.userRig);
         this.userRig.rotation.y = THREE.Math.degToRad(120);
+        this.userRig.add(this.signRig);
     }
 }

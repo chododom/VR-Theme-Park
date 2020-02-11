@@ -9,7 +9,7 @@ export class FerrisWheel extends THREE.Group{
     super();
 
     // Exhibit 5 - Ferris Wheel
-    this.add(new USER.UserPlatform(userRig));
+    this.add(new MyUserPlatform(userRig, signRig));
     var signRig = new THREE.Group();
 
     // Base group for floor and support beams.
@@ -119,7 +119,7 @@ export class FerrisWheel extends THREE.Group{
 
     // Carts grouped with their rotation pivot based at position of the connection bars.
     for(var i = 0; i < wheelConnections.length; ++i){        
-        var cart = new CART.Cart(userRig, bigWheel.speed / 2, -0.3, animatedObjects);
+        var cart = new CART.Cart(userRig, signRig, bigWheel.speed / 2, -0.3, animatedObjects);
         carts.push(cart);
 
         var pivot = new THREE.Group();
@@ -178,7 +178,7 @@ export class FerrisWheel extends THREE.Group{
                                     });
                             }
                         }
-					})
+                    })
           ];
     
     var sign = new GUIVR.GuiVRMenu(buttons);
@@ -213,7 +213,7 @@ export class FerrisWheel extends THREE.Group{
                         var connectionMat = new THREE.MeshLambertMaterial( {color: 0xFE422F} );
                         
                         for(var i = 0; i < x; ++i){        
-                            var cart = new CART.Cart(userRig, bigWheel.speed / 2, -0.3, animatedObjects);
+                            var cart = new CART.Cart(userRig, signRig, bigWheel.speed / 2, -0.3, animatedObjects);
                             carts.push(cart);
                     
                             var pivot = new THREE.Group();
@@ -264,4 +264,27 @@ export class FerrisWheel extends THREE.Group{
     this.add(sign2);
     inited = true;
     }  
+}
+
+
+export class MyUserPlatform extends USER.UserPlatform {
+
+    constructor(userRig, signRig){
+    super(userRig);
+    this.signRig = signRig;
+
+    this.remove(this.children[1]);
+    var platform = new THREE.Mesh(
+	    new THREE.CylinderGeometry(1, 1, 1, 32),
+	    new THREE.MeshLambertMaterial({color: 0xFE422F}));
+    this.add(platform);
+    this.collider = platform;
+    }
+
+    collide(uv, pt){
+	    // When the user clicks on this platform, move the user to it.
+        this.add(this.userRig);
+        this.userRig.rotation.y = 0;
+        this.add(this.signRig);
+    }
 }
