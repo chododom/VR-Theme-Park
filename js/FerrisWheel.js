@@ -8,11 +8,6 @@ export class FerrisWheel extends THREE.Group{
     constructor(userRig, animatedObjects, shape, cartCnt){
     super();
 
-    this.shape = shape;
-    this.cartCnt = cartCnt;
-    this.userRig = userRig;
-    this.animatedObjects = animatedObjects;    
-
     // Exhibit 5 - Ferris Wheel
     this.add(new USER.UserPlatform(userRig));
     var signRig = new THREE.Group();
@@ -37,7 +32,7 @@ export class FerrisWheel extends THREE.Group{
 
     // Two parts of the big wheel.
     for(var i = 0; i < 2; ++i){
-        var wheelGeo = new THREE.RingGeometry(2.9, 3, this.shape);
+        var wheelGeo = new THREE.RingGeometry(2.9, 3, shape);
         var wheelMat = new THREE.MeshLambertMaterial( {color: 0x08324E, side: THREE.DoubleSide} );
         var wheel = new THREE.Mesh(wheelGeo, wheelMat);
 	    wheel.position.set(0, 0, -1 + i * 2);
@@ -65,11 +60,12 @@ export class FerrisWheel extends THREE.Group{
     }
 
     var wheelConnections = [];
+    var wheelPivots = [];
     var connectionGeo = new THREE.CylinderGeometry( 0.03, 0.03, 2, 32 );
     var connectionMat = new THREE.MeshLambertMaterial( {color: 0xFE422F} );
 
     // Bars to connect wheels in places where cars will hang.
-    for(var i = 0; i < this.cartCnt; ++i){
+    for(var i = 0; i < cartCnt; ++i){
         var pivot = new THREE.Group();
         bigWheel.add(pivot);
         pivot.position.set(0, 0, 0);
@@ -80,13 +76,14 @@ export class FerrisWheel extends THREE.Group{
         cylinder.position.set(0, -2.75, 0);
         pivot.add(cylinder);
         wheelConnections.push(cylinder);
-        pivot.rotateZ(THREE.Math.degToRad(i * 360 / this.cartCnt));
+        wheelPivots.push(pivot);
+        pivot.rotateZ(THREE.Math.degToRad(i * 360 / cartCnt));
     }
 
     var centerConnections = [];
 
     // Connections between center connection and outer edges of the wheels.
-    for(var i = 0; i < this.cartCnt; ++i){
+    for(var i = 0; i < cartCnt; ++i){
         var pivot = new THREE.Group();
         bigWheel.add(pivot);
         pivot.position.set( 0.0, 0.0, 0 );
@@ -99,7 +96,7 @@ export class FerrisWheel extends THREE.Group{
             pivot.add(connection);
             centerConnections.push(connection);
         }
-        pivot.rotateZ(THREE.Math.degToRad(i * 360 / this.cartCnt));
+        pivot.rotateZ(THREE.Math.degToRad(i * 360 / cartCnt));
     }
 
     var supports = [];
@@ -118,20 +115,22 @@ export class FerrisWheel extends THREE.Group{
     }
 
     var carts = [];
+    var cartPivots = [];
 
     // Carts grouped with their rotation pivot based at position of the connection bars.
     for(var i = 0; i < wheelConnections.length; ++i){        
-        var cart = new CART.Cart(userRig, wheelConnections, i, 0.5, -0.3, animatedObjects);
+        var cart = new CART.Cart(userRig, bigWheel.speed / 2, -0.3, animatedObjects);
         carts.push(cart);
-        bigWheel.add(cart);
+
         var pivot = new THREE.Group();
         pivot.add(cart);
-        pivot.rotateZ(THREE.Math.degToRad(i * 360 / wheelConnections.length));
+        pivot.rotation.z = THREE.Math.degToRad(i * 360 / wheelConnections.length);
 
         // Set cart's starting position
         cart.myAxis = new THREE.Vector3(0, 0, 1);
         cart.rotateOnWorldAxis(cart.myAxis, THREE.Math.degToRad(-i * 360 / wheelConnections.length));
         bigWheel.add(pivot);
+        cartPivots.push(pivot);
     }
 
     bigWheel.position.set(0, 3.7, -11);
@@ -191,11 +190,9 @@ export class FerrisWheel extends THREE.Group{
 
     this.add(signRig);
 
-    var ex = this;
-
-    var buttons2 = [new GUIVR.GuiVRButton("Shape", 8, 3, 20, true,
+    var buttons2 = [new GUIVR.GuiVRButton("Shape", shape, 3, 20, true,
 					function(x){
-                        for(var i = 0; i < bigWheel.children.length; ++i) bigWheel.remove(wheels[0]).remove(wheels[1]);
+                        bigWheel.remove(wheels[0]).remove(wheels[1]);
                         wheels = [];
                         for(var i = 0; i < 2; ++i){
                             var wheelGeo = new THREE.RingGeometry(2.9, 3, x);
@@ -205,9 +202,56 @@ export class FerrisWheel extends THREE.Group{
                             bigWheel.add(wheel);
                             wheels.push(wheel);
                         }
+                        shape = x;
                     }),
-                    new GUIVR.GuiVRButton("Cart count", 8, 0, 10, true,
-					function(x){
+                    new GUIVR.GuiVRButton("Cart count", cartCnt, 0, 10, true,
+					function(x){                        
+                        for(var i = 0; i < cartPivots.length; ++i) bigWheel.remove(cartPivots[i]).remove(carts[i]);
+                        carts = [];
+                        cartPivots = [];
+                        var connectionGeo = new THREE.CylinderGeometry( 0.03, 0.03, 2, 32 );
+                        var connectionMat = new THREE.MeshLambertMaterial( {color: 0xFE422F} );
+                        
+                        for(var i = 0; i < x; ++i){        
+                            var cart = new CART.Cart(userRig, bigWheel.speed / 2, -0.3, animatedObjects);
+                            carts.push(cart);
+                    
+                            var pivot = new THREE.Group();
+                            pivot.add(cart);
+                            pivot.rotation.z = THREE.Math.degToRad(i * 360 / x);
+                    
+                            // Set cart's starting position
+                            cart.myAxis = new THREE.Vector3(0, 0, 1);
+                            cart.rotateOnWorldAxis(cart.myAxis, THREE.Math.degToRad(-i * 360 / x));
+                            bigWheel.add(pivot);
+                            cartPivots.push(pivot);
+                        }
+                        bigWheel.rotation.z = 0;
+                        
+                        for(var i = 0; i < wheelPivots.length; ++i) bigWheel.remove(wheelPivots[i]).remove(wheelConnections[i]);
+
+                        wheelConnections = [];
+                        wheelPivots = [];
+                        var connectionGeo = new THREE.CylinderGeometry( 0.03, 0.03, 2, 32 );
+                        var connectionMat = new THREE.MeshLambertMaterial( {color: 0xFE422F} );
+
+                        // Bars to connect wheels in places where cars will hang.
+                        for(var i = 0; i < x; ++i){
+                            var pivot = new THREE.Group();
+                            bigWheel.add(pivot);
+                            pivot.position.set(0, 0, 0);
+
+                            var cylinder = new THREE.Mesh( connectionGeo, connectionMat );
+                            cylinder.rotation.x = THREE.Math.degToRad(90);
+                        
+                            cylinder.position.set(0, -2.75, 0);
+                            pivot.add(cylinder);
+                            wheelConnections.push(cylinder);
+                            wheelPivots.push(pivot);
+                            pivot.rotateZ(THREE.Math.degToRad(i * 360 / x));
+                        }
+
+                        cartCnt = x;                       
                     })
                     ];
     

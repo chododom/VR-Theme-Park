@@ -3,7 +3,7 @@ import { GuiVR } from './GuiVR.js';
 
 export class Cart extends GuiVR{
 
-    constructor(userRig, wheelConnections, place, speed, y, animatedObjects){
+    constructor(userRig, speed, y, animatedObjects){
         super();
 
         const loader = new THREE.TextureLoader();
@@ -12,7 +12,6 @@ export class Cart extends GuiVR{
             map: loader.load('../textures/glass.jpg')
         } );
 
-        var bar = wheelConnections[place];
         this.position.y = -2.75;
         this.speed = speed;
 
