@@ -310,7 +310,7 @@ function initExhibit4(userRig){
 
 function initExhibit5(userRig){
 
-    var exhibit = new FERRIS.FerrisWheel(scene, userRig, animatedObjects, 8, 6);
+    var exhibit = new FERRIS.FerrisWheel(userRig, animatedObjects, 8, 6);
 
     // Pose exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(90);

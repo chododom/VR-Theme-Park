@@ -5,11 +5,13 @@ import * as CART from './Cart.js';
 
 export class FerrisWheel extends THREE.Group{
 
-    constructor(scene, userRig, animatedObjects, shape, cartCnt){
+    constructor(userRig, animatedObjects, shape, cartCnt){
     super();
 
     this.shape = shape;
     this.cartCnt = cartCnt;
+    this.userRig = userRig;
+    this.animatedObjects = animatedObjects;    
 
     // Exhibit 5 - Ferris Wheel
     this.add(new USER.UserPlatform(userRig));
@@ -80,29 +82,6 @@ export class FerrisWheel extends THREE.Group{
         wheelConnections.push(cylinder);
         pivot.rotateZ(THREE.Math.degToRad(i * 360 / this.cartCnt));
     }
-
-    /*var prevX = [- 0.8, 0.8];
-    var prevY = [- 2.9 - 2.1, 2.9 + 2.1];
-    for(var i = 0; i < 4; ++i){
-        for(var j = 0; j < 2; ++j){
-            var connectionGeo = new THREE.CylinderGeometry( 0.03, 0.03, 2, 32 );
-            var connectionMat = new THREE.MeshLambertMaterial( {color: 0xFE422F} );
-            var cylinder = new THREE.Mesh( connectionGeo, connectionMat );
-            cylinder.rotation.x = THREE.Math.degToRad(90);
-
-            if(i % 2 == 1){
-                if(i % 3 == 0) cylinder.position.set(prevX[j] + (j % 2 == 0 ? - 0.8 : 0.8), prevY[j] + (j % 2 == 0 ? 2.1 : - 2.1), 0);
-                else cylinder.position.set(j % 2 == 0 ? prevX[j] + 2.1 : prevX[j] - 2.1, j % 2 == 0 ? prevY[j] + 0.8 : prevY[j] - 0.8, 0);
-            }
-            else{
-                cylinder.position.set(prevX[j] + (j % 2 == 0 ? 0.8 : - 0.8), prevY[j] + (j % 2 == 0 ? 2.1 : - 2.1), 0);
-            }
-            prevX[j] = cylinder.position.x;
-            prevY[j] = cylinder.position.y;
-            bigWheel.add( cylinder );
-            wheelConnections.push(cylinder);
-            }   
-    }*/
 
     var centerConnections = [];
 
@@ -212,13 +191,23 @@ export class FerrisWheel extends THREE.Group{
 
     this.add(signRig);
 
+    var ex = this;
+
     var buttons2 = [new GUIVR.GuiVRButton("Shape", 8, 3, 20, true,
 					function(x){
-                        this.shape = x;
+                        for(var i = 0; i < bigWheel.children.length; ++i) bigWheel.remove(wheels[0]).remove(wheels[1]);
+                        wheels = [];
+                        for(var i = 0; i < 2; ++i){
+                            var wheelGeo = new THREE.RingGeometry(2.9, 3, x);
+                            var wheelMat = new THREE.MeshLambertMaterial( {color: 0x08324E, side: THREE.DoubleSide} );
+                            var wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                            wheel.position.set(0, 0, -1 + i * 2);
+                            bigWheel.add(wheel);
+                            wheels.push(wheel);
+                        }
                     }),
                     new GUIVR.GuiVRButton("Cart count", 8, 0, 10, true,
 					function(x){
-                        this.cartCnt = x;
                     })
                     ];
     
