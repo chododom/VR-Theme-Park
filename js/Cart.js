@@ -1,6 +1,12 @@
+// Author: Dominik Chodounsky
+// CSC 385 Computer Graphics
+// Version: Winter 2020
+// Project 2: Cart class
+
 import * as THREE from '../extern/build/three.module.js';
 import { GuiVR } from './GuiVR.js';
 
+// Class to represent the carts of a Ferris Wheel
 export class Cart extends GuiVR{
 
     constructor(userRig, signRig, speed, y, animatedObjects){
@@ -19,6 +25,7 @@ export class Cart extends GuiVR{
         cart.position.y = y;
         this.add(cart);
 
+        // Rotation to counter the rotation of the wheel
         this.setAnimation(
             function (dt){
                 this.rotation.z -= this.speed * 0.01;
@@ -30,6 +37,7 @@ export class Cart extends GuiVR{
         this.signRig = signRig;
     }
 
+    // Clicking on cart sits user on top of it and adjusts his view
     collide(uv, pt){
         // When the user clicks on this platform, move the user to it.
         this.add(this.userRig);

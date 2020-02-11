@@ -1,24 +1,30 @@
+// Author: Dominik Chodounsky
+// CSC 385 Computer Graphics
+// Version: Winter 2020
+// Project 2: FerrisWheel class and MyUserPlatform
+
 import * as THREE from '../extern/build/three.module.js';
 import * as GUIVR from './GuiVR.js';
 import * as USER from './User.js';
 import * as CART from './Cart.js';
 
+// Class to build and animate a Ferris Wheel (Exhibit no. 5)
 export class FerrisWheel extends THREE.Group{
 
     constructor(userRig, animatedObjects, shape, cartCnt){
     super();
 
-    // Exhibit 5 - Ferris Wheel
+    // Build my own user platform
     this.add(new MyUserPlatform(userRig, signRig));
     var signRig = new THREE.Group();
 
-    // Base group for floor and support beams.
+    // Base group for floor and support beams
     var base = new THREE.Group();
     base.position.y = 0.001;
     base.position.z = -11;
     this.add(base);
 
-    // Create floor.
+    // Create floor
     var groundGeo = new THREE.PlaneGeometry(9, 9);
     var groundMat = new THREE.MeshLambertMaterial({color: 0x08323E});
     var ground = new THREE.Mesh(groundGeo, groundMat);
@@ -26,11 +32,11 @@ export class FerrisWheel extends THREE.Group{
     ground.receiveShadow = true;
     base.add(ground);
 
-    // Group for moving ferris wheel and its components.
+    // Group for moving ferris wheel and its components
     var bigWheel = new THREE.Group();
     var wheels = [];
 
-    // Two parts of the big wheel.
+    // Two parts of the big wheel
     for(var i = 0; i < 2; ++i){
         var wheelGeo = new THREE.RingGeometry(2.9, 3, shape);
         var wheelMat = new THREE.MeshLambertMaterial( {color: 0x08324E, side: THREE.DoubleSide} );
@@ -49,7 +55,7 @@ export class FerrisWheel extends THREE.Group{
 
     var centerCircles = [];
 
-    // Caps on ends of center connection.
+    // Caps on ends of center connection
     for(var i = 0; i < 2; ++i){
         var circleGeo = new THREE.CircleGeometry(0.17, 32);
         var circleMat = new THREE.MeshLambertMaterial( {color: 0x981508} );
@@ -64,7 +70,7 @@ export class FerrisWheel extends THREE.Group{
     var connectionGeo = new THREE.CylinderGeometry( 0.03, 0.03, 2, 32 );
     var connectionMat = new THREE.MeshLambertMaterial( {color: 0xFE422F} );
 
-    // Bars to connect wheels in places where cars will hang.
+    // Bars to connect wheels in places where cars will hang
     for(var i = 0; i < cartCnt; ++i){
         var pivot = new THREE.Group();
         bigWheel.add(pivot);
@@ -82,7 +88,7 @@ export class FerrisWheel extends THREE.Group{
 
     var centerConnections = [];
 
-    // Connections between center connection and outer edges of the wheels.
+    // Connections between center connection and outer edges of the wheels
     for(var i = 0; i < cartCnt; ++i){
         var pivot = new THREE.Group();
         bigWheel.add(pivot);
@@ -101,7 +107,7 @@ export class FerrisWheel extends THREE.Group{
 
     var supports = [];
     
-    // Support beams for the wheel.
+    // Support beams for the wheel
     for(var i = 0; i < 2; ++i){
         for(var j = 0; j < 2; ++j){
             var supportGeo = new THREE.CylinderGeometry(0.05, 0.05, 5.7, 32);
@@ -117,7 +123,7 @@ export class FerrisWheel extends THREE.Group{
     var carts = [];
     var cartPivots = [];
 
-    // Carts grouped with their rotation pivot based at position of the connection bars.
+    // Carts grouped with their rotation pivot based at position of the connection bars
     for(var i = 0; i < wheelConnections.length; ++i){        
         var cart = new CART.Cart(userRig, signRig, bigWheel.speed / 2, -0.3, animatedObjects);
         carts.push(cart);
@@ -143,10 +149,9 @@ export class FerrisWheel extends THREE.Group{
         });
     animatedObjects.push(bigWheel);
 
-    var inited = false; // To keep button initialization below from moving the user.
+    var inited = false; // To keep button initialization below from moving the user
 
     // Make GUI signs.
-    
     var buttons = [new GUIVR.GuiVRButton("Speed", 1, 0, 10, false,
 					function(x){
                          bigWheel.speed = x;
@@ -266,7 +271,7 @@ export class FerrisWheel extends THREE.Group{
     }  
 }
 
-
+// Adjusted User Platform class to have unique color and pin sign when getting of the Ferris Wheel
 export class MyUserPlatform extends USER.UserPlatform {
 
     constructor(userRig, signRig){
@@ -281,6 +286,7 @@ export class MyUserPlatform extends USER.UserPlatform {
     this.collider = platform;
     }
 
+    // When getting of the Ferris Wheel to this specific platform, the sign will be pinned to exhibit and removed from userRig
     collide(uv, pt){
 	    // When the user clicks on this platform, move the user to it.
         this.add(this.userRig);
