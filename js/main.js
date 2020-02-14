@@ -63,7 +63,7 @@ function initExhibit1(userRig){
 
     // Pose the exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(90);
-    exhibit.position.z = -5;
+    exhibit.position.z = 15;
     exhibit.position.x = -3;
 
     scene.add(exhibit);
@@ -178,7 +178,7 @@ function initExhibit2(userRig){
     
         // Pose exhibit.
         exhibit.rotation.y = THREE.Math.degToRad(-90);
-        exhibit.position.z = -5;
+        exhibit.position.z = 15;
         exhibit.position.x = 3;
     
         scene.add(exhibit);
@@ -260,7 +260,7 @@ function initExhibit3(userRig){
 
     // Pose exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(90);
-    exhibit.position.z = -15;
+    exhibit.position.z = 5;
     exhibit.position.x = -3;
     
     scene.add(exhibit);
@@ -298,7 +298,7 @@ function initExhibit4(userRig){
     var light = new THREE.SpotLight(0xffffff, 1);
     light.target.position.z = -5;
     light.target.position.x = 0;
-    light.target.position.y = 0;
+    light.target.position.y = -5;
     exhibit.add(light.target);
     light.position.x = 3;
     light.position.y = 3;
@@ -359,7 +359,7 @@ function initExhibit4(userRig){
 
     // Pose exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(-90);
-    exhibit.position.z = -15;
+    exhibit.position.z = 5;
     exhibit.position.x = 3;
     
     scene.add(exhibit);
@@ -372,7 +372,7 @@ function initExhibit5(userRig){
 
     // Pose exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(90);
-    exhibit.position.z = -25;
+    exhibit.position.z = -10;
     exhibit.position.x = -3;
 
     scene.add(exhibit);
@@ -381,16 +381,15 @@ function initExhibit5(userRig){
 function initExhibit6(userRig){
 
     var exhibit = new THREE.Group();
-    // Add landing platform for the exhibit.
-    exhibit.add(new USER.UserPlatform(userRig));
 
     var window = new THREE.Group();
+    window.position.z = -10;
+
     var geometry = new THREE.CylinderBufferGeometry( 0.1, 0.1, 6, 4 );
     var material = new THREE.MeshLambertMaterial( {color: 0xff0000} );
 
     for(var j = 0; j < 2; ++j){
         var width = new THREE.Mesh( geometry, material );
-        width.position.z = -10;
         width.position.y = 0.1 + j * 4;
         width.rotation.z = THREE.Math.degToRad(90);
         width.rotation.x = THREE.Math.degToRad(45);
@@ -401,13 +400,13 @@ function initExhibit6(userRig){
 
     for(var j = 0; j < 2; ++j){
         var height = new THREE.Mesh( geometry, material );
-        height.position.z = -10;
         height.position.y = 0.1;
         height.position.x = -3.1 + j * 6.2;
        // height.rotation.y = THREE.Math.degToRad(45);
         window.add(height);
     }
     exhibit.add(window);
+
 
     const loader = new THREE.TextureLoader();
 
@@ -418,21 +417,111 @@ function initExhibit6(userRig){
     saber.add(handle);
 
     var lightGeo = new THREE.CylinderBufferGeometry( 0.03, 0.03, 1.2, 32 );
-    var lightMat = new THREE.MeshPhongMaterial( {
-        map: loader.load('../textures/light_saber.jpg')
+    var lightMat = new THREE.MeshPhongMaterial({
+        map: loader.load('../textures/blue_saber.jfif')
     } );
     var light = new THREE.Mesh(lightGeo, lightMat);
 
-    /*var glow = new THREE.PointLight( 0x34D7EC, 50, 3 );
-    glow.position.set( 0,0.6,0 );
-    light.add( glow );*/
-
     light.position.y = 1;
     saber.add(light);
+    
+    saber.position.z = -1;
+    saber.position.x = 1.5;
     exhibit.add(saber);
 
-    saber.position.z = -2;
-    saber.position.x = 1;
+    var game = new THREE.Group();
+    var cubes = [];
+    game.setAnimation(
+        function(dt){
+            if(this.t == undefined){
+                this.t = 0;
+            }
+            this.t += dt;
+            if(Math.floor(this.t) % 10 == 0){
+                this.t = Math.ceil(this.t);
+
+                var geometry = new THREE.BoxBufferGeometry( 0.3, 0.3, 0.3 );
+                var material = new THREE.MeshPhongMaterial( {color: 0xff0000} );
+                var cube = new THREE.Mesh( geometry, material );
+                cube.position.x = getRandomInt(-6/2 + 0.3, 6/2 - 0.3);
+                cube.position.y = getRandomInt(0.1 + 0.3, 8.2/2 - 0.3);
+                cubes.push(cube);
+                window.add(cube); 
+                cube.setAnimation(
+                    function (dt){
+                    if (this.t == undefined){
+                        this.t = 0;
+                    }
+                    this.t += dt;
+                    this.position.z += dt;
+                    // Cause the projectile to disappear after t is 20.
+                    if (this.position.z > -window.position.z){
+                        window.remove(this);
+                    }
+                    });
+                    animatedObjects.push(cube);
+                    } 
+            }
+        
+    )
+    animatedObjects.push(game);   
+
+        
+        exhibit.add(new USER.UserPlatform(
+        userRig,
+        function (){
+            console.log("Landing at Exhibit 6");
+            // Get controller's position
+            let controller = userRig.getController(0);
+            // Add new model for controller (should be removed on leaving).
+            controller.add(saber);
+            // Set animation to check whether trigger button is
+            // pressed and then fire a projectile in the frame of the
+            // controller if is and enough time has elapsed since last
+            // firing.
+            controller.setAnimation(
+            function (dt){
+                if (this.t == undefined){
+                this.t = 0;
+                }
+                this.t += dt;
+                // Decide to fire.
+                if (controller.triggered
+                && (this.t - this.lastFire >= 10
+                    || this.lastFire == undefined)){
+                this.lastFire = this.t;
+                // Create new projectile and set up motion.
+                let proj = saber.clone();
+                console.log("Firing");
+                controller.add(proj);
+                proj.setAnimation(
+                    function (dt){
+                    if (this.t == undefined){
+                        this.t = 0;
+                    }
+                    this.t += dt;
+                    this.position.z -= dt;
+                    // Cause the projectile to disappear after t is 20.
+                    if (this.t > 20){
+                        this.parent.remove(this);
+                    }
+                    }
+                );
+                }
+            }
+            );
+    
+        }/*,
+        function (){
+            console.log("Leaving Exhibit 6");
+            let controller = userRig.getController(0);
+            // Clear the model added to controller.
+            controller.remove(saber);
+            // Remove special animation attached to controller.
+            controller.setAnimation(undefined);
+        }*/
+        ));  
+
 
     // Make a GUI sign.
     var buttons = [new GUIVR.GuiVRButton("Speed", 1, 0, 10, true,
@@ -445,10 +534,16 @@ function initExhibit6(userRig){
 
     // Pose the exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(-90);
-    exhibit.position.z = -25;
+    exhibit.position.z = -10;
     exhibit.position.x = 3;
 
     scene.add(exhibit);
+}
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Initialize THREE objects in the scene.
