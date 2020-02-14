@@ -320,6 +320,79 @@ function initExhibit5(userRig){
     scene.add(exhibit);
 }
 
+function initExhibit6(userRig){
+
+    var exhibit = new THREE.Group();
+    // Add landing platform for the exhibit.
+    exhibit.add(new USER.UserPlatform(userRig));
+
+    var window = new THREE.Group();
+    var geometry = new THREE.CylinderBufferGeometry( 0.1, 0.1, 6, 4 );
+    var material = new THREE.MeshLambertMaterial( {color: 0xff0000} );
+
+    for(var j = 0; j < 2; ++j){
+        var width = new THREE.Mesh( geometry, material );
+        width.position.z = -10;
+        width.position.y = 0.1 + j * 4;
+        width.rotation.z = THREE.Math.degToRad(90);
+        width.rotation.x = THREE.Math.degToRad(45);
+        window.add(width);
+    }
+
+    geometry = new THREE.CylinderBufferGeometry( 0.1, 0.1, 8.2, 4 );
+
+    for(var j = 0; j < 2; ++j){
+        var height = new THREE.Mesh( geometry, material );
+        height.position.z = -10;
+        height.position.y = 0.1;
+        height.position.x = -3.1 + j * 6.2;
+       // height.rotation.y = THREE.Math.degToRad(45);
+        window.add(height);
+    }
+    exhibit.add(window);
+
+    const loader = new THREE.TextureLoader();
+
+    var saber = new THREE.Group();
+    var handleGeo = new THREE.CylinderBufferGeometry( 0.07, 0.07, 1, 32 );
+    var handleMat = new THREE.MeshPhongMaterial( {color: 0x9F9EA1} );
+    var handle = new THREE.Mesh(handleGeo, handleMat);
+    saber.add(handle);
+
+    var lightGeo = new THREE.CylinderBufferGeometry( 0.03, 0.03, 1.2, 32 );
+    var lightMat = new THREE.MeshPhongMaterial( {
+        map: loader.load('../textures/light_saber.jpg')
+    } );
+    var light = new THREE.Mesh(lightGeo, lightMat);
+
+    /*var glow = new THREE.PointLight( 0x34D7EC, 50, 3 );
+    glow.position.set( 0,0.6,0 );
+    light.add( glow );*/
+
+    light.position.y = 1;
+    saber.add(light);
+    exhibit.add(saber);
+
+    saber.position.z = -2;
+    saber.position.x = 1;
+
+    // Make a GUI sign.
+    var buttons = [new GUIVR.GuiVRButton("Speed", 1, 0, 10, true,
+					 function(x){})];
+    var sign = new GUIVR.GuiVRMenu(buttons);
+    sign.position.x = 0;
+    sign.position.z = -2;
+    sign.position.y = 0.5;
+    exhibit.add(sign);
+
+    // Pose the exhibit.
+    exhibit.rotation.y = THREE.Math.degToRad(-90);
+    exhibit.position.z = -25;
+    exhibit.position.x = 3;
+
+    scene.add(exhibit);
+}
+
 // Initialize THREE objects in the scene.
 function initExhibits(userRig){
 
@@ -357,7 +430,8 @@ function initExhibits(userRig){
     initExhibit2(userRig);
     initExhibit3(userRig);
     initExhibit4(userRig); 
-    initExhibit5(userRig); 
+    initExhibit5(userRig);
+    initExhibit6(userRig); 
 }
 
 function init() {
