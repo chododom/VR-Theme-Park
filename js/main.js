@@ -72,59 +72,117 @@ function initExhibit1(userRig){
 
 function initExhibit2(userRig){
 
-    // Exhibit 2 - OBJ Loading Example
-    var exhibit = new THREE.Group();
-    exhibit.add(new USER.UserPlatform(userRig));  
-
-    // Rig to hold the loaded model.
-    var rig = new THREE.Group();
-    rig.rotation.y = THREE.Math.degToRad(-90);
-    rig.speed = 1;
-    rig.position.y = 0;
-    rig.position.z = -5;
-    // Make the rig slowly rotate.
-    rig.setAnimation(
-	function (dt){
-	    this.rotation.y += this.speed * 0.01;
-	});
-    animatedObjects.push(rig);
-    exhibit.add(rig);
-
-    // Make GUI sign.
-    var buttons = [new GUIVR.GuiVRButton("Speed", 1, 0, 10, true,
-					 function(x){rig.speed = x;})];
-    var sign = new GUIVR.GuiVRMenu(buttons);
-    sign.position.x = 0;
-    sign.position.z = -2;
-    sign.position.y = 0.5;
-    exhibit.add(sign);
-
-    // Load the model
-    var loader = new FBXLoader();
+     // Exhibit 2 - OBJ Loading Example
+     let controllerModel = new THREE.Mesh(
+        new THREE.BoxGeometry(0.25, 0.25, 0.25),
+        new THREE.MeshPhongMaterial({color: 0xff0000}));
+        
+        var exhibit = new THREE.Group();
+        exhibit.add(new USER.UserPlatform(
+        userRig,
+        function (){
+            console.log("Landing at Exhibit 2");
+            // Get controller's position
+            let controller = userRig.getController(0);
+            // Add new model for controller (should be removed on leaving).
+            controller.add(controllerModel);
+            // Set animation to check whether trigger button is
+            // pressed and then fire a projectile in the frame of the
+            // controller if is and enough time has elapsed since last
+            // firing.
+            controller.setAnimation(
+            function (dt){
+                if (this.t == undefined){
+                this.t = 0;
+                }
+                this.t += dt;
+                // Decide to fire.
+                if (controller.triggered
+                && (this.t - this.lastFire >= 10
+                    || this.lastFire == undefined)){
+                this.lastFire = this.t;
+                // Create new projectile and set up motion.
+                let proj = controllerModel.clone();
+                console.log("Firing");
+                controller.add(proj);
+                proj.setAnimation(
+                    function (dt){
+                    if (this.t == undefined){
+                        this.t = 0;
+                    }
+                    this.t += dt;
+                    this.position.z -= dt;
+                    // Cause the projectile to disappear after t is 20.
+                    if (this.t > 20){
+                        this.parent.remove(this);
+                    }
+                    }
+                );
+                }
+            }
+            );
     
-    loader.load(
-	'../extern/models/lambo/Lamborghini_Aventador.fbx',
-	function ( obj ) {
-	    // Scale and add to the rig once loaded.
-	    obj.scale.x = 0.01;
-	    obj.scale.y = 0.01;
-	    obj.scale.z = 0.01;
-	    rig.add(obj);
-	},
-	function (xhr){
-		console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-	},
-	function (error){
-		console.log('An error happened');
-	}
-    );
-
-    // Pose exhibit.
-    exhibit.rotation.y = THREE.Math.degToRad(-90);
-    exhibit.position.z = -5;
-    exhibit.position.x = 3;
-
-    scene.add(exhibit);
+        },
+        function (){
+            console.log("Leaving Exhibit 2");
+            let controller = userRig.getController(0);
+            // Clear the model added to controller.
+            controller.remove(controllerModel);
+            // Remove special animation attached to controller.
+            controller.setAnimation(undefined);
+        }
+        ));  
+    
+        // Rig to hold the loaded model.
+        var rig = new THREE.Group();
+        rig.rotation.y = THREE.Math.degToRad(-90);
+        rig.speed = 1;
+        rig.position.y = 0;
+        rig.position.z = -5;
+        // Make the rig slowly rotate.
+        rig.setAnimation(
+        function (dt){
+            this.rotation.y += this.speed * 0.01;
+        });
+        animatedObjects.push(rig);
+        exhibit.add(rig);
+    
+        // Make GUI sign.
+        var buttons = [new GUIVR.GuiVRButton("Speed", 1, 0, 10, true,
+                         function(x){rig.speed = x;})];
+        var sign = new GUIVR.GuiVRMenu(buttons);
+        sign.position.x = 0;
+        sign.position.z = -2;
+        sign.position.y = 0.5;
+        exhibit.add(sign);
+    
+        // Load the model
+        var loader = new FBXLoader();
+        
+        loader.load(
+        '../extern/models/lambo/Lamborghini_Aventador.fbx',
+        function ( obj ) {
+            // Scale and add to the rig once loaded.
+            obj.scale.x = 0.01;
+            obj.scale.y = 0.01;
+            obj.scale.z = 0.01;
+            rig.add(obj);
+        },
+        function (xhr){
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        function (error){
+            console.log('An error happened');
+        }
+        );
+    
+        // Pose exhibit.
+        exhibit.rotation.y = THREE.Math.degToRad(-90);
+        exhibit.position.z = -5;
+        exhibit.position.x = 3;
+    
+        scene.add(exhibit);
+      
 }
 
 function initExhibit3(userRig){
@@ -506,14 +564,16 @@ function onWindowResize() {
 // Updates world and renders one frame.
 // Is repeatedly called by main rendering loop.
 function render() {
-
+    let dt = 0.1;
     // Force the gui to appear as heads up display tracking headset
     // position.
-    for (var i = 0; i < animatedObjects.length; i++){
-	animatedObjects[i].animate(0.1);
+    for (let i = 0; i < animatedObjects.length; i++){
+	animatedObjects[i].animate(dt);
     }
+    userRig.animate(dt);
     
     renderer.render(scene, camera);
+
 }
 
 // Main program.

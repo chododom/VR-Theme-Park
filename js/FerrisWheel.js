@@ -34,6 +34,7 @@ export class FerrisWheel extends THREE.Group{
 
     // Group for moving ferris wheel and its components
     var bigWheel = new THREE.Group();
+    bigWheel.cartCnt = cartCnt;
     var wheels = [];
 
     // Two parts of the big wheel
@@ -71,7 +72,7 @@ export class FerrisWheel extends THREE.Group{
     var connectionMat = new THREE.MeshLambertMaterial( {color: 0xFE422F} );
 
     // Bars to connect wheels in places where cars will hang
-    for(var i = 0; i < cartCnt; ++i){
+    for(var i = 0; i < bigWheel.cartCnt; ++i){
         var pivot = new THREE.Group();
         bigWheel.add(pivot);
         pivot.position.set(0, 0, 0);
@@ -83,13 +84,13 @@ export class FerrisWheel extends THREE.Group{
         pivot.add(cylinder);
         wheelConnections.push(cylinder);
         wheelPivots.push(pivot);
-        pivot.rotateZ(THREE.Math.degToRad(i * 360 / cartCnt));
+        pivot.rotateZ(THREE.Math.degToRad(i * 360 / bigWheel.cartCnt));
     }
 
     var centerConnections = [];
 
     // Connections between center connection and outer edges of the wheels
-    for(var i = 0; i < cartCnt; ++i){
+    for(var i = 0; i < bigWheel.cartCnt; ++i){
         var pivot = new THREE.Group();
         bigWheel.add(pivot);
         pivot.position.set( 0.0, 0.0, 0 );
@@ -98,11 +99,11 @@ export class FerrisWheel extends THREE.Group{
             var connectionMat = new THREE.MeshBasicMaterial( {color: 0x08324E} );
             var connection = new THREE.Mesh( connectionGeo, connectionMat );
             connection.position.set(0, - 1.45, j % 2 == 0 ? 1 : -1);
-            bigWheel.add(connection);
+           
             pivot.add(connection);
-            centerConnections.push(connection);
+            centerConnections.push(pivot);
         }
-        pivot.rotateZ(THREE.Math.degToRad(i * 360 / cartCnt));
+        pivot.rotateZ(THREE.Math.degToRad(i * 360 / bigWheel.cartCnt));
     }
 
     var supports = [];
@@ -124,28 +125,30 @@ export class FerrisWheel extends THREE.Group{
     var cartPivots = [];
 
     // Carts grouped with their rotation pivot based at position of the connection bars
-    for(var i = 0; i < wheelConnections.length; ++i){        
-        var cart = new CART.Cart(userRig, signRig, bigWheel.speed / 2, -0.3, animatedObjects);
+    for(var i = 0; i < bigWheel.cartCnt; ++i){        
+        var cart = new CART.Cart(userRig, signRig, bigWheel.speed / 2, -0.3, animatedObjects, bigWheel.direction);
         carts.push(cart);
 
         var pivot = new THREE.Group();
         pivot.add(cart);
-        pivot.rotation.z = THREE.Math.degToRad(i * 360 / wheelConnections.length);
+        pivot.rotation.z = THREE.Math.degToRad(i * 360 / bigWheel.cartCnt);
 
         // Set cart's starting position
         cart.myAxis = new THREE.Vector3(0, 0, 1);
-        cart.rotateOnWorldAxis(cart.myAxis, THREE.Math.degToRad(-i * 360 / wheelConnections.length));
+        cart.rotateOnWorldAxis(cart.myAxis, THREE.Math.degToRad(-i * 360 / bigWheel.cartCnt));
         bigWheel.add(pivot);
         cartPivots.push(pivot);
     }
 
     bigWheel.position.set(0, 3.7, -11);
     bigWheel.speed = 1;
+    bigWheel.direction = 0;
     this.add(bigWheel);
 
     bigWheel.setAnimation(
         function (dt){
-            this.rotation.z += this.speed * 0.01;
+            if(bigWheel.direction == 0) this.rotation.z += this.speed * 0.01;
+            else this.rotation.z -= this.speed * 0.01;
         });
     animatedObjects.push(bigWheel);
 
@@ -183,6 +186,7 @@ export class FerrisWheel extends THREE.Group{
                                     });
                             }
                         }
+                        bigWheel.direction = x;
                     })
           ];
     
@@ -209,6 +213,7 @@ export class FerrisWheel extends THREE.Group{
                         }
                         shape = x;
                     }),
+                    // pass old cart speed and direction to new
                     new GUIVR.GuiVRButton("Cart count", cartCnt, 0, 10, true,
 					function(x){                        
                         for(var i = 0; i < cartPivots.length; ++i) bigWheel.remove(cartPivots[i]).remove(carts[i]);
@@ -218,7 +223,7 @@ export class FerrisWheel extends THREE.Group{
                         var connectionMat = new THREE.MeshLambertMaterial( {color: 0xFE422F} );
                         
                         for(var i = 0; i < x; ++i){        
-                            var cart = new CART.Cart(userRig, signRig, bigWheel.speed / 2, -0.3, animatedObjects);
+                            var cart = new CART.Cart(userRig, signRig, bigWheel.speed / 2, -0.3, animatedObjects, bigWheel.direction);
                             carts.push(cart);
                     
                             var pivot = new THREE.Group();
@@ -256,7 +261,27 @@ export class FerrisWheel extends THREE.Group{
                             pivot.rotateZ(THREE.Math.degToRad(i * 360 / x));
                         }
 
-                        cartCnt = x;                       
+                        for(var i = 0; i < centerConnections.length; ++i) bigWheel.remove(centerConnections[i]);
+                        centerConnections = [];
+
+                        // Connections between center connection and outer edges of the wheels
+                        for(var i = 0; i < x; ++i){
+                            var pivot = new THREE.Group();
+                            bigWheel.add(pivot);
+                            pivot.position.set( 0.0, 0.0, 0 );
+                            for(var j = 0; j < 2; ++j){
+                                var connectionGeo = new THREE.CylinderGeometry( 0.05, 0.05, 2.9, 32 );
+                                var connectionMat = new THREE.MeshBasicMaterial( {color: 0x08324E} );
+                                var connection = new THREE.Mesh( connectionGeo, connectionMat );
+                                connection.position.set(0, - 1.45, j % 2 == 0 ? 1 : -1);
+                               
+                                pivot.add(connection);
+                                centerConnections.push(pivot);
+                            }
+                            pivot.rotateZ(THREE.Math.degToRad(i * 360 / x));
+                        }
+
+                        bigWheel.cartCnt = x;                       
                     })
                     ];
     

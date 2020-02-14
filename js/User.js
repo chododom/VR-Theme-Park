@@ -20,16 +20,22 @@ export class UserRig extends THREE.Group {
 
 	this.add(camera); // Add camera to the rig.
 	this.xr = xr;
-
+	this.controllers = [];
+	
 	// Set up the controller to be represented as a line.
 	// This code use to be in init() in main.js.
-	for (var i = 0; i < 1; i++){
-	    var controller = xr.getController(i);
+	for (var i = 0; i < 2; i++){
+	    let controller = xr.getController(i);
 	    if (controller != undefined){
+		this.controllers.push(controller);
+	
 		controller.addEventListener('selectstart',
 					    (ev) => (this.onSelectStartVR(ev)));
+		controller.addEventListener('selectend',
+					    (ev) => (this.onSelectEndVR(ev)));
+		
 		this.add(controller); // Add controller to the rig.
-		var controllerPointer =
+		let controllerPointer =
 		    new THREE.Line(
 			new THREE.BufferGeometry().setFromPoints([
 			    new THREE.Vector3(0, 0, 0),
@@ -44,6 +50,15 @@ export class UserRig extends THREE.Group {
 	}
     }
 
+    // Returns the nth controller if it exists, and undefined otherwise.
+    getController(n){
+	if (n >= 0 && n < this.controllers.length){
+	    return this.controllers[n];
+	} else {
+	    return undefined;
+	}
+    }
+
     onSelectStartVR(event){
 	// VR trigger event handler.  Use to be in main.js, but
 	// otherwise does what it did before.
@@ -52,19 +67,25 @@ export class UserRig extends THREE.Group {
 	    // Handle controller click in VR.
 	    
 	    // Retrieve the pointer object.
-	    var controller = event.target;
-	    var controllerPointer = controller.getObjectByName('pointer');
+	    let controller = event.target;
+	    let controllerPointer = controller.getObjectByName('pointer');
+
+	    for (let i = 0; i < this.controllers.length; i++){
+		if (controller == this.controllers[i]) {
+		    controller.triggered = true;
+		}
+	    }
 	    
 	    // Create raycaster from the controller position along the
 	    // pointer line.
-	    var tempMatrix = new THREE.Matrix4();
+	    let tempMatrix = new THREE.Matrix4();
 	    tempMatrix.identity().extractRotation(controller.matrixWorld);
-	    var raycaster = new THREE.Raycaster();
+	    let raycaster = new THREE.Raycaster();
 	    raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
 	    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
 	    
 	    // Register the click into the GUI.
-	    var hit = GUIVR.intersectObjects(raycaster);
+	    let hit = GUIVR.intersectObjects(raycaster);
 	    if (hit){
 		//debugWrite("Hit something");
 	    }
@@ -74,12 +95,27 @@ export class UserRig extends THREE.Group {
 	    //DEBUG.displayNavigator(navigator);
 	}
     }
+
+    onSelectEndVR(event){
+	// VR trigger release event handler. 
+	
+	if (!(event instanceof MouseEvent) && this.xr.isPresenting()){
+	    let controller = event.target;
+
+	    for (let i = 0; i < this.controllers.length; i++){
+		if (controller == this.controllers[i]){
+		    controller.triggered = false;
+		}
+	    }
+	    
+	}
+    }
 }
 
 
 export class UserPlatform extends GUIVR.GuiVR {
 
-    constructor(userRig){
+    constructor(userRig, onLand, onLeave){
 	super();
 
 	// Make the shape of a platform.
@@ -100,11 +136,23 @@ export class UserPlatform extends GUIVR.GuiVR {
 	this.collider = platform;
 
 	this.userRig = userRig;
+	this.onLand = onLand;
+	this.onLeave = onLeave;
     }
 
     
     collide(uv, pt){
 	// When the user clicks on this platform, move the user to it.
+	let parent = this.userRig.parent;
+	if (parent != undefined && (parent instanceof UserPlatform)){
+	    if (parent.onLeave != undefined){
+		parent.onLeave();
+	    }
+	}
+	
 	this.add(this.userRig);
+	if (this.onLand != undefined){
+	    this.onLand();
+	}
     }
 }

@@ -9,7 +9,7 @@ import { GuiVR } from './GuiVR.js';
 // Class to represent the carts of a Ferris Wheel
 export class Cart extends GuiVR{
 
-    constructor(userRig, signRig, speed, y, animatedObjects){
+    constructor(userRig, signRig, speed, y, animatedObjects, dir){
         super();
 
         const loader = new THREE.TextureLoader();
@@ -28,7 +28,8 @@ export class Cart extends GuiVR{
         // Rotation to counter the rotation of the wheel
         this.setAnimation(
             function (dt){
-                this.rotation.z -= this.speed * 0.01;
+                if(dir == 0) this.rotation.z -= this.speed * 0.01;
+                else this.rotation.z += this.speed * 0.01;
             });
         animatedObjects.push(this);
 
