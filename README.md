@@ -8,7 +8,7 @@
 ## Beat Saber 2.0 game
 - adjustable parameters: cube speed, cube size, spawn rate of cubes
 - adjustable both by passing parameters or in-game before the start of a round
-- includes music, so #SOUND_ON
+- includes music, so #SOUND_ON (sometimes browser doesn't play sound immediately, so use START button to turn the game off and back on and it should play, the experience is much more fun with the music on)
 - light saber model was a last minute attachment, hitbox should work (was adjusted accordingly), but it is generally better to hit in a stabbing motion closer to the tip of the lightsaber and not swing too fast, the animation loop isn't updating fast enough for certain speeds
 - plays better on the Oculus Quest and HTC Vive, addittional DOF for headset make it easier to reach cubes and line up hitboxes, but the Go works too
 - as for raycaster lasers, I wanted to make the controller pointer disappear, but the controller class acts strangely, the User.controllers does not include only one
