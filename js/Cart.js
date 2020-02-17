@@ -43,6 +43,7 @@ export class Cart extends GuiVR{
         // When the user clicks on this platform, move the user to it.
         this.add(this.userRig);
         this.userRig.rotation.y = THREE.Math.degToRad(120);
+        this.signRig.z = -2;
         this.userRig.add(this.signRig);
     }
 }

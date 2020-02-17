@@ -315,6 +315,7 @@ export class MyUserPlatform extends USER.UserPlatform {
     collide(uv, pt){
 	    // When the user clicks on this platform, move the user to it.
         this.add(this.userRig);
+        this.userRig.remove(this.signRig);
         this.userRig.rotation.y = 0;
         this.add(this.signRig);
     }

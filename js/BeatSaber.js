@@ -15,6 +15,7 @@ export class BeatSaber extends THREE.Group{
         var game = new THREE.Group();
         game.score = 0;
         game.started = false;
+        game.animated = false;
         game.speed = speed;
         game.cubeSize = cubeSize;
         game.spawnRate = spawnRate;
@@ -78,7 +79,7 @@ export class BeatSaber extends THREE.Group{
 
         // Window to show where cubes spawn
         var window = new THREE.Group();
-        window.position.z = -20;
+        window.position.z = -14;
 
         var geometry = new THREE.CylinderBufferGeometry( 0.05, 0.05, 6, 32 );
         var material = new THREE.MeshLambertMaterial( {color: 0xff0000} );
@@ -109,23 +110,25 @@ export class BeatSaber extends THREE.Group{
         var handle = new THREE.Mesh(handleGeo, handleMat);
         saber.add(handle);
 
-        var lightGeo = new THREE.CylinderBufferGeometry( 0.03, 0.03, 2, 32 );
+        var lightGeo = new THREE.CylinderBufferGeometry( 0.03, 0.03, 2.3, 32 );
         var lightMat = new THREE.MeshPhongMaterial({
             map: loader.load('../textures/blue_saber.jfif')
         } );
         var light = new THREE.Mesh(lightGeo, lightMat);
 
-        light.position.y = 2 / 2;
+        light.position.y = 2.3 / 2;
         saber.add(light);
 
-        var sphereGeo = new THREE.SphereBufferGeometry( game.cubeSize + 0.1, 32, 32 );
+        var sphereGeo = new THREE.SphereBufferGeometry( game.cubeSize + 0.2, 32, 32 );
         var sphereMat = new THREE.MeshBasicMaterial( {color: 0xffff00, visible: false} );
         var hitBoxSphere = new THREE.Mesh(sphereGeo, sphereMat);
-        hitBoxSphere.position.y = 2.3 - (game.cubeSize + 0.1);
+        hitBoxSphere.position.y = 2.3 - (game.cubeSize + 0.2);
         hitBoxSphere.radius = game.cubeSize + 0.1;
         saber.hitBox = hitBoxSphere;
+        saber.rotation.x = THREE.Math.degToRad(-45);
         saber.add(hitBoxSphere);
 
+        game.pointer;
         game.setAnimation(
             function(dt){
                 if(this.t == undefined){
@@ -133,6 +136,8 @@ export class BeatSaber extends THREE.Group{
                 }
                 this.t += dt;
                 
+                if(!this.started) return;
+
                 //console.log("Testing, CHILDREN: " + this.cubes.length);
                 for(var i = 0; i < this.cubes.length; ++i){
                     if(spheresIntersect(saber.hitBox, this.cubes[i].hitBox)){
@@ -141,7 +146,7 @@ export class BeatSaber extends THREE.Group{
                         this.cubes.shift();
                         console.log("Score: " + this.score);
 
-                        back.remove(back.children[0]);
+                        back.remove(text);
                         var fontLoader = new THREE.FontLoader();
                         fontLoader.load('../extern/fonts/helvetiker_bold.typeface.json', function (font){
                             var textGeo = new THREE.TextBufferGeometry("Score: " + game.score, {
@@ -159,20 +164,19 @@ export class BeatSaber extends THREE.Group{
                     }
                 }
 
-                if(Math.floor(this.t) % 10 == 0){
+                if(Math.floor(this.t) % game.spawnRate == 0){
                     this.t = Math.ceil(this.t);
 
-                    var geometry = new THREE.BoxBufferGeometry( 0.3, 0.3, 0.3 );
+                    var geometry = new THREE.BoxBufferGeometry(game.cubeSize, game.cubeSize, game.cubeSize);
                     var material = new THREE.MeshPhongMaterial( {color: 0xff0000} );
                     var cube = new THREE.Mesh( geometry, material );
-                    cube.position.set(getRandomInt(-2.95 + 0.3, 2.95 - 0.3), getRandomInt(0.05 + 0.3, 4.05 - 0.3), -10);
+                    cube.position.set(getRandom(-2.2 + game.cubeSize, 2.1 - game.cubeSize), getRandom(0.05 + game.cubeSize, 1.4 + 2.1 - game.cubeSize), window.position.z);
 
                     sphereGeo = new THREE.SphereBufferGeometry( 0.73 * game.cubeSize, 32, 32 );
                     sphereMat = new THREE.MeshBasicMaterial( {color: 0xffff00, visible: false} ); // visible true to show hitbox
                     var hitBoxSphere = new THREE.Mesh(sphereGeo, sphereMat);
                     hitBoxSphere.radius = 0.73 * game.cubeSize;
                     cube.hitBox = hitBoxSphere;
-                    cube.speed = game.speed;
                     cube.add(hitBoxSphere);
 
                     this.cubes.push(cube);
@@ -184,6 +188,12 @@ export class BeatSaber extends THREE.Group{
                         if (this.t == undefined){
                             this.t = 0;
                         }
+
+                        if(!game.started) {
+                            this.removed = true;
+                            game.remove(this);
+                        }
+
                         this.t += dt;
                         this.position.z += game.speed * dt;
                         
@@ -200,30 +210,12 @@ export class BeatSaber extends THREE.Group{
                 }
             
         )
-        animatedObjects.push(game);   
+       // animatedObjects.push(game);   
             
             this.add(new USER.UserPlatform(
             userRig,
             function (){
-                console.log("Landing at Beat Saber game");
-                // Get controller's position
-                let controller = userRig.getController(0);
-                // Add new model for controller (should be removed on leaving).
-                saber.rotation.x = THREE.Math.degToRad(-30);
-                controller.add(saber);
-                // Set animation to check whether trigger button is
-                // pressed and then fire a projectile in the frame of the
-                // controller if is and enough time has elapsed since last
-                // firing.
-                controller.setAnimation(
-                function (dt){
-                    if (this.t == undefined){
-                    this.t = 0;
-                    }
-                    this.t += dt;
-                }
-                );
-            
+                console.log("Landing at Beat Saber game");            
             },
             function (){
                 console.log("Leaving Beat Saber game");
@@ -237,12 +229,110 @@ export class BeatSaber extends THREE.Group{
 
 
         // Make a GUI sign.
-        var buttons = [new GUIVR.GuiVRButton("Speed", 1, 0, 10, true,
-	    				 function(x){})];
+        var buttons = [new GUIVR.GuiVRButton("Speed", game.speed, 1, 3, false,
+                         function(x){
+                            if(inited) game.speed = x;
+                         }),
+                        new GUIVR.GuiVRButton("Cube size", game.cubeSize, 0.3, 0.8, false,
+                        function(x){
+                            game.cubeSize = x;
+
+                            // Reshape lightsaber's hitbox
+                            if(inited){
+                                saber.remove(saber.hitBox);
+                                let sphereGeo = new THREE.SphereBufferGeometry( x + 0.1, 32, 32 );
+                                let sphereMat = new THREE.MeshBasicMaterial( {color: 0xffff00, visible: false} ); // visible true to show hitbox
+                                let hitBoxSphere = new THREE.Mesh(sphereGeo, sphereMat);
+                                hitBoxSphere.position.y = 2.3 - (x + 0.1);
+                                hitBoxSphere.radius = x + 0.1;
+                                saber.hitBox = hitBoxSphere;
+                                saber.add(hitBoxSphere);
+                            }
+                        }),
+                        new GUIVR.GuiVRButton("Gap", game.spawnRate, 7, 20, true,
+                         function(x){
+                            if(inited) game.spawnRate = x;
+                         }) 
+                    ];
         var sign = new GUIVR.GuiVRMenu(buttons);
-        sign.position.x = 0;
-        sign.position.z = -2;
+        sign.position.x = -2;
+        sign.position.z = -3;
         sign.position.y = 0.5;
+        sign.rotation.y = THREE.Math.degToRad(25);
+        game.add(sign);
+
+        var inited = false;
+
+        var startSign = new GUIVR.GuiVRMenu([new GUIVR.GuiVRButton("START", 0, 0, 1, true,
+                    function(x){
+                        if(x == 1){
+                            game.started = true;
+                            if(inited){
+                                console.log("Game starting");
+                                if(!game.animated) animatedObjects.push(game);
+                                game.animated = true;
+                                game.remove(sign);
+                                
+                                let controller = userRig.getController(0);
+                                controller.add(saber);
+
+                                // Map lightsaber to controler and turn off raycaster
+                                /*let controller = userRig.getController(0);
+                                if(userRig.controllers.length == 1){
+                                    controller.add(saber);
+                                }
+                                else{
+                                    for(var i = 0; i < controller.children.length; ++i){
+                                        if(controller.children[i].name == 'pointer'){
+                                            controller.remove(controller.children[i]);
+                                            game.pointer = controller.children[i];
+                                        }
+                                    }
+                                    controller.add(saber);
+                                }*/
+                            }
+                        }
+                        else{
+                            if(inited){
+                                console.log("Game stopped");
+                                game.score = 0;
+                                game.started = false;
+                                game.cubes = [];
+
+                                game.add(sign);
+
+                                let controller = userRig.getController(0);
+                                controller.remove(saber);
+                                controller.add(game.pointer);
+
+                                console.log("Resetting scoreboard");
+                                back.remove(text);
+                                var fontLoader = new THREE.FontLoader();
+                                fontLoader.load('../extern/fonts/helvetiker_bold.typeface.json', function (font){
+                                    var textGeo = new THREE.TextBufferGeometry("Score: 0", {
+                                        font: font,
+                                        size: 0.7,
+                                        height: 0.02,
+                                        curveSegments: 3,
+                                    });
+                                    var textMat = new THREE.MeshPhongMaterial({color: 0xff0000});
+                                    text = new THREE.Mesh(textGeo, textMat);
+                                    text.position.z = 0.2;
+                                    text.position.x = -2.8;
+                                    back.add(text);
+                                });
+                            }
+                        }
+                    }
+        )]);
+
+        startSign.position.x = -2;
+        startSign.position.z = -3;
+        startSign.position.y = 1;
+        startSign.rotation.y = THREE.Math.degToRad(25);
+        game.add(startSign)
+
+        inited = true;
 
     }
 }   
@@ -262,8 +352,6 @@ function spheresIntersect(sphere1, sphere2){
 }
 
 
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function getRandom(min, max) {
+    return Math.random() * (max - min) + min;
 }

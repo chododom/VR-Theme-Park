@@ -369,26 +369,68 @@ function initExhibit4(userRig){
 
 function initExhibit5(userRig){
 
+    // Recommended parameters
     var exhibit = new FERRIS.FerrisWheel(userRig, animatedObjects, 8, 6);
 
     // Pose exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(90);
     exhibit.position.z = -10;
-    exhibit.position.x = -3;
+    exhibit.position.x = -4;
 
     scene.add(exhibit);
+
+    // Param demo 1
+    var exhibit2 = new FERRIS.FerrisWheel(userRig, animatedObjects, 4, 2);
+
+    // Pose exhibit.
+    exhibit2.rotation.y = THREE.Math.degToRad(90);
+    exhibit2.position.z = -20;
+    exhibit2.position.x = -4;
+
+    scene.add(exhibit2);
+
+    // Param demo 2
+    var exhibit3 = new FERRIS.FerrisWheel(userRig, animatedObjects, 20, 10);
+
+    // Pose exhibit.
+    exhibit3.rotation.y = THREE.Math.degToRad(90);
+    exhibit3.position.z = -30;
+    exhibit3.position.x = -4;
+
+    scene.add(exhibit3);
 }
 
 function initExhibit6(userRig){
 
-    var exhibit = new BEAT.BeatSaber(userRig, animatedObjects, 0.8, 0.3, 10);
+    // Recommended parameters
+    var exhibit = new BEAT.BeatSaber(userRig, animatedObjects, 1.5, 0.3, 10);
     
     // Pose the exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(-90);
     exhibit.position.z = -10;
-    exhibit.position.x = 3;
+    exhibit.position.x = 4;
 
     scene.add(exhibit);
+
+    // Param demo 1
+    var exhibit2 = new BEAT.BeatSaber(userRig, animatedObjects, 3, 0.7, 10);
+    
+    // Pose the exhibit.
+    exhibit2.rotation.y = THREE.Math.degToRad(-90);
+    exhibit2.position.z = -20;
+    exhibit2.position.x = 4;
+
+    scene.add(exhibit2);
+
+    // Param demo 2
+    var exhibit3 = new BEAT.BeatSaber(userRig, animatedObjects, 1, 0.5, 20);
+    
+    // Pose the exhibit.
+    exhibit3.rotation.y = THREE.Math.degToRad(-90);
+    exhibit3.position.z = -30;
+    exhibit3.position.x = 4;
+
+    scene.add(exhibit3);
 }
 
 // Initialize THREE objects in the scene.
