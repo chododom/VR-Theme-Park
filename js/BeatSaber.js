@@ -182,7 +182,6 @@ export class BeatSaber extends THREE.Group{
 	        sound.setBuffer( buffer );
 	        sound.setLoop( true );
             sound.setVolume( 0.5 );
-            sound.isPlaying = false;
         });
 
         // Light saber modeled in THREE JS by me
@@ -261,7 +260,7 @@ export class BeatSaber extends THREE.Group{
                         console.log("Score: " + this.score);
 
                         // Update score
-                        back.remove(text);
+                        back.remove(back.children[0]);
                         var fontLoader = new THREE.FontLoader();
                         fontLoader.load('../extern/fonts/helvetiker_bold.typeface.json', function (font){
                             var textGeo = new THREE.TextBufferGeometry("Score: " + game.score, {
@@ -328,7 +327,7 @@ export class BeatSaber extends THREE.Group{
         )
         
         // Platform for user to stand on
-        var platform = new USER.UserPlatform(
+        this.add(new USER.UserPlatform(
         userRig,
         function (){
             console.log("Landing at Beat Saber game");            
@@ -340,14 +339,8 @@ export class BeatSaber extends THREE.Group{
             controller.remove(saber);
             // Remove special animation attached to controller.
             controller.setAnimation(undefined);
-            // Turn off sound
-            if(sound.isPlaying) {
-                sound.stop();
-                sound.isPlaying = false;
-            }
         }
-        );
-        this.add(platform);
+        ));
 
         var inited = false;
 
@@ -391,14 +384,14 @@ export class BeatSaber extends THREE.Group{
                         if(x == 1){
                             game.started = true;
                             if(inited){
+                                let controller = userRig.getController(0);
+                                controller.add(saber);
+
                                 console.log("Game starting");
-                                if(!sound.isPlaying) {console.log("Sound ON"); sound.play(); sound.isPlaying = true;}
+                                if(!sound.isPlaying) {console.log("Sound ON"); sound.play();}
                                 if(!game.animated) animatedObjects.push(game);
                                 game.animated = true;
                                 game.remove(sign);
-                                
-                                let controller = userRig.getController(0);
-                                controller.add(saber);
 
                                 game.remove(instBack)
 
@@ -423,7 +416,6 @@ export class BeatSaber extends THREE.Group{
                             if(inited){
                                 if(sound.isPlaying) {
                                     sound.stop();
-                                    sound.isPlaying = false;
                                     console.log("Sound OFF");
                                 }
                                 console.log("Game stopped");
@@ -437,7 +429,7 @@ export class BeatSaber extends THREE.Group{
                                 controller.remove(saber);
 
                                 console.log("Resetting scoreboard");
-                                back.remove(text);
+                                back.remove(back.children[0]);
                                 var fontLoader = new THREE.FontLoader();
                                 fontLoader.load('../extern/fonts/helvetiker_bold.typeface.json', function (font){
                                     var textGeo = new THREE.TextBufferGeometry("Score: 0", {
