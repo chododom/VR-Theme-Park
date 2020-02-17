@@ -316,15 +316,7 @@ export class MyUserPlatform extends USER.UserPlatform {
     collide(uv, pt){
         // When the user clicks on this platform, move the user to it.
         this.add(this.userRig);
-
-        // detach sign rig from user rig when getting off the ride
-        this.userRig.remove(this.signRig);
-
-        // reset facing direction
         this.userRig.rotation.y = 0;
-
-        // reset sign to platform
-        this.signRig.rotation.y = 0;
-        myPlatform.add(this.signRig);
+        this.add(this.signRig);
     }
 }

@@ -234,7 +234,7 @@ export class BeatSaber extends THREE.Group{
         var sphereMat = new THREE.MeshBasicMaterial( {color: 0xffff00, visible: false} );
         var hitBoxSphere = new THREE.Mesh(sphereGeo, sphereMat);
         hitBoxSphere.position.y = 1.1 - (game.cubeSize + 0.2) ;
-        hitBoxSphere.radius = game.cubeSize + 0.1;
+        hitBoxSphere.radius = game.cubeSize + 0.2;
         saber.hitBox = hitBoxSphere;
         saber.rotation.x = THREE.Math.degToRad(-45);
         saber.add(hitBoxSphere);
