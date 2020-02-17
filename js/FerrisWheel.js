@@ -15,7 +15,8 @@ export class FerrisWheel extends THREE.Group{
     super();
 
     // Build my own user platform
-    this.add(new MyUserPlatform(userRig, signRig));
+    var myPlatform = new MyUserPlatform(userRig, signRig);
+    this.add(myPlatform);
     var signRig = new THREE.Group();
 
     // Base group for floor and support beams
@@ -193,11 +194,11 @@ export class FerrisWheel extends THREE.Group{
     var sign = new GUIVR.GuiVRMenu(buttons);
 
     sign.position.x = 1.5;
-    sign.position.z = -2;
+    sign.position.z = -3;
     sign.position.y = 1.3;
     signRig.add(sign);
 
-    this.add(signRig);
+    myPlatform.add(signRig);
 
     var buttons2 = [new GUIVR.GuiVRButton("Shape", shape, 3, 20, true,
 					function(x){
@@ -288,7 +289,7 @@ export class FerrisWheel extends THREE.Group{
     var sign2 = new GUIVR.GuiVRMenu(buttons2);
 
     sign2.position.x = -1.5;
-    sign2.position.z = -2;
+    sign2.position.z = -3;
     sign2.position.y = 1.3;
 
     this.add(sign2);
@@ -313,10 +314,17 @@ export class MyUserPlatform extends USER.UserPlatform {
 
     // When getting of the Ferris Wheel to this specific platform, the sign will be pinned to exhibit and removed from userRig
     collide(uv, pt){
-	    // When the user clicks on this platform, move the user to it.
+        // When the user clicks on this platform, move the user to it.
         this.add(this.userRig);
+
+        // detach sign rig from user rig when getting off the ride
         this.userRig.remove(this.signRig);
+
+        // reset facing direction
         this.userRig.rotation.y = 0;
-        this.add(this.signRig);
+
+        // reset sign to platform
+        this.signRig.rotation.y = 0;
+        myPlatform.add(this.signRig);
     }
 }

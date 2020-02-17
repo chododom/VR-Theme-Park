@@ -51,6 +51,42 @@ export class BeatSaber extends THREE.Group{
         back.position.set(0, 2.05, -16);
         tunnel.add(back);
 
+        var arrowGeo = new THREE.BufferGeometry();
+        var vertices = new Float32Array( [
+             1, 3, 0,
+            -1, 3, 0,
+            -1, 0, 0,
+
+            -1, 0, 0,
+             1, 0, 0,
+             1, 3, 0,
+
+             2, 0, 0,
+             0, 0, 0,
+             0, -2, 0,
+
+             0, -2, 0,
+             0, 0, 0,
+            -2, 0, 0  
+        ] );
+
+        // itemSize = 3 because there are 3 values (components) per vertex
+        arrowGeo.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+        var arrowMat = new THREE.MeshBasicMaterial( { color: 0xBC403C, side: THREE.DoubleSide } );
+        var arrow = new THREE.Mesh( arrowGeo, arrowMat );
+        arrow.scale.set(0.14, 1, 0.2);
+        arrow.position.z = -4;
+        arrow.position.y = 0.1;
+        arrow.rotation.x = THREE.Math.degToRad(-90);
+        game.add(arrow);
+
+        for(var j = 0; j < 2; ++j){
+            var sideArrow = arrow.clone();
+            sideArrow.position.x = -1.5 + j * 3;
+            sideArrow.position.z = -6;
+            game.add(sideArrow);
+        }
+
         // Text on back wall announcing the score
         var text;
         var fontLoader = new THREE.FontLoader();
@@ -101,6 +137,43 @@ export class BeatSaber extends THREE.Group{
         }
         game.add(window);
 
+        // Instructions background
+        var instBackGeo = new THREE.PlaneGeometry(2, 1.5, 1);
+        var instBackMat = new THREE.MeshBasicMaterial( {color: 0xDCDCDC, side: THREE.DoubleSide} );
+        var instBack = new THREE.Mesh(instBackGeo, instBackMat);
+        instBack.position.y = 2;
+        instBack.position.z = -3;
+
+        // Text of instructions
+        var instText;
+        var fontLoader = new THREE.FontLoader();
+	    fontLoader.load('../extern/fonts/helvetiker_bold.typeface.json', function (font){
+	        var instTextGeo = new THREE.TextBufferGeometry("Welcome to Beat Saber 2.0 !\n\nYour goal is to hit as many cubes flying at you with\nyou awesome lightsaber. You can adjust the speed\nof the flying cubes, their size and the time gap between\ntheir spawns.\nWhenever you are ready to play, toggle on the START\nbutton and you will get your lightsaber and the game\nwill start.\n\nPro tip: Try to use the tip of the lightsaber and stab\nthe cubes, slicing may not always be the best move\neven though it looks cool ;)\n\nHave fun!", {
+		        font: font,
+		        size: 0.05,
+		        height: 0.01,
+		        curveSegments: 3,
+	        });
+	        var instTextMat = new THREE.MeshPhongMaterial({color: 0x2198A1});
+            instText = new THREE.Mesh(instTextGeo, instTextMat);
+            instText.position.z = 0.1;
+            instText.position.x = -0.9;
+            instText.position.y = 0.5;
+            instBack.add(instText);
+        });
+        
+        // Add soundtrack
+        var listener = new THREE.AudioListener();
+        game.add(listener);
+
+        var sound = new THREE.Audio( listener );
+
+        var audioLoader = new THREE.AudioLoader();
+        audioLoader.load( 'sounds/balearic_pumping.mp3', function( buffer ) {
+	        sound.setBuffer( buffer );
+	        sound.setLoop( true );
+	        sound.setVolume( 0.5 );
+        });
 
         const loader = new THREE.TextureLoader();
 
@@ -128,7 +201,7 @@ export class BeatSaber extends THREE.Group{
         saber.rotation.x = THREE.Math.degToRad(-45);
         saber.add(hitBoxSphere);
 
-        game.pointer;
+        //game.pointer;
         game.setAnimation(
             function(dt){
                 if(this.t == undefined){
@@ -168,7 +241,7 @@ export class BeatSaber extends THREE.Group{
                     this.t = Math.ceil(this.t);
 
                     var geometry = new THREE.BoxBufferGeometry(game.cubeSize, game.cubeSize, game.cubeSize);
-                    var material = new THREE.MeshPhongMaterial( {color: 0xff0000} );
+                    var material = new THREE.MeshLambertMaterial( {color: 0xFE1008} );
                     var cube = new THREE.Mesh( geometry, material );
                     cube.position.set(getRandom(-2.2 + game.cubeSize, 2.1 - game.cubeSize), getRandom(0.05 + game.cubeSize, 1.4 + 2.1 - game.cubeSize), window.position.z);
 
@@ -211,22 +284,22 @@ export class BeatSaber extends THREE.Group{
             
         )
        // animatedObjects.push(game);   
-            
-            this.add(new USER.UserPlatform(
-            userRig,
-            function (){
-                console.log("Landing at Beat Saber game");            
-            },
-            function (){
-                console.log("Leaving Beat Saber game");
-                let controller = userRig.getController(0);
-                // Clear the model added to controller.
-                controller.remove(saber);
-                // Remove special animation attached to controller.
-                controller.setAnimation(undefined);
-            }
-            ));  
-
+        
+       var platform = new USER.UserPlatform(
+        userRig,
+        function (){
+            console.log("Landing at Beat Saber game");            
+        },
+        function (){
+            console.log("Leaving Beat Saber game");
+            let controller = userRig.getController(0);
+            // Clear the model added to controller.
+            controller.remove(saber);
+            // Remove special animation attached to controller.
+            controller.setAnimation(undefined);
+        }
+        );
+        this.add(platform);
 
         // Make a GUI sign.
         var buttons = [new GUIVR.GuiVRButton("Speed", game.speed, 1, 3, false,
@@ -268,13 +341,16 @@ export class BeatSaber extends THREE.Group{
                         if(x == 1){
                             game.started = true;
                             if(inited){
-                                console.log("Game starting");
+                                console.log("Game starting"); 
+                                if(!sound.isPlaying) {console.log("Sound ON"); sound.play();}
                                 if(!game.animated) animatedObjects.push(game);
                                 game.animated = true;
                                 game.remove(sign);
                                 
                                 let controller = userRig.getController(0);
                                 controller.add(saber);
+
+                                game.remove(instBack)
 
                                 // Map lightsaber to controler and turn off raycaster
                                 /*let controller = userRig.getController(0);
@@ -293,7 +369,9 @@ export class BeatSaber extends THREE.Group{
                             }
                         }
                         else{
+                            game.add(instBack);
                             if(inited){
+                                if(sound.isPlaying) sound.stop();
                                 console.log("Game stopped");
                                 game.score = 0;
                                 game.started = false;
@@ -333,7 +411,6 @@ export class BeatSaber extends THREE.Group{
         game.add(startSign)
 
         inited = true;
-
     }
 }   
 

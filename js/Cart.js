@@ -42,8 +42,12 @@ export class Cart extends GuiVR{
     collide(uv, pt){
         // When the user clicks on this platform, move the user to it.
         this.add(this.userRig);
+
+        // face the ride direction
         this.userRig.rotation.y = THREE.Math.degToRad(120);
-        this.signRig.z = -2;
-        this.userRig.add(this.signRig);
+
+        // add sign to user rig
+        this.signRig.rotation.y = THREE.Math.degToRad(110);
+        this.add(this.signRig);
     }
 }
