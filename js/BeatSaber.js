@@ -181,7 +181,8 @@ export class BeatSaber extends THREE.Group{
         audioLoader.load( 'sounds/balearic_pumping.mp3', function( buffer ) {
 	        sound.setBuffer( buffer );
 	        sound.setLoop( true );
-	        sound.setVolume( 0.5 );
+            sound.setVolume( 0.5 );
+            sound.isPlaying = false;
         });
 
         // Light saber modeled in THREE JS by me
@@ -340,7 +341,10 @@ export class BeatSaber extends THREE.Group{
             // Remove special animation attached to controller.
             controller.setAnimation(undefined);
             // Turn off sound
-            if(sound.isPlaying) sound.stop();
+            if(sound.isPlaying) {
+                sound.stop();
+                sound.isPlaying = false;
+            }
         }
         );
         this.add(platform);
@@ -387,8 +391,8 @@ export class BeatSaber extends THREE.Group{
                         if(x == 1){
                             game.started = true;
                             if(inited){
-                                console.log("Game starting"); 
-                                if(!sound.isPlaying) {console.log("Sound ON"); sound.play();}
+                                console.log("Game starting");
+                                if(!sound.isPlaying) {console.log("Sound ON"); sound.play(); sound.isPlaying = true;}
                                 if(!game.animated) animatedObjects.push(game);
                                 game.animated = true;
                                 game.remove(sign);
@@ -417,7 +421,11 @@ export class BeatSaber extends THREE.Group{
                         else{
                             game.add(instBack);
                             if(inited){
-                                if(sound.isPlaying) sound.stop();
+                                if(sound.isPlaying) {
+                                    sound.stop();
+                                    sound.isPlaying = false;
+                                    console.log("Sound OFF");
+                                }
                                 console.log("Game stopped");
                                 game.score = 0;
                                 game.started = false;
