@@ -9,4 +9,8 @@
 - adjustable parameters: cube speed, cube size, spawn rate of cubes
 - adjustable both by passing parameters or in-game before the start of a round
 - includes music, so #SOUND_ON
-- light saber model was a last minute attachment, hitbox should work (was adjusted accordingly), but it is generally better to hit in a stabbing motion closer to the tip of the light saber and not swing too fast, the animation loop isn't updating fast enough for certain speeds
+- light saber model was a last minute attachment, hitbox should work (was adjusted accordingly), but it is generally better to hit in a stabbing motion closer to the tip of the lightsaber and not swing too fast, the animation loop isn't updating fast enough for certain speeds
+- plays better on the Oculus Quest and HTC Vive, addittional DOF for headset make it easier to reach cubes and line up hitboxes, but the Go works too
+- as for raycaster lasers, I wanted to make the controller pointer disappear, but the controller class acts strangely, the User.controllers does not include only one
+controller for the Go, so I can't tell which device is being used, therefore to keep the option of ending the game from the Go as well (other two could use controller without mapped lightsaber to point and click), there is always a laser as well as the lightsaber
+- (fun fact: I was this close *shows tiny distance between fingers* to adding dancing storm troopers to my game, but decided to respect your wishes not to see any of those)
