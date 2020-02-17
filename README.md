@@ -9,4 +9,4 @@
 - adjustable parameters: cube speed, cube size, spawn rate of cubes
 - adjustable both by passing parameters or in-game before the start of a round
 - includes music, so #SOUND_ON
-- light saber model was a last minute attachment, hitbox should work (was adjusted accordingly), but it is generally better to hit in a stabbing motion closer to the tip of the light saber
+- light saber model was a last minute attachment, hitbox should work (was adjusted accordingly), but it is generally better to hit in a stabbing motion closer to the tip of the light saber and not swing too fast, the animation loop isn't updating fast enough for certain speeds
