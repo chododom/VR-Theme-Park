@@ -6,12 +6,15 @@
 import * as THREE from '../extern/build/three.module.js';
 import * as USER from './User.js';
 import * as GUIVR from './GuiVR.js';
+import {GLTFLoader}  from '../extern/examples/jsm/loaders/GLTFLoader.js';
 
+// Class to build and animate game of Beat Saber 2.0
 export class BeatSaber extends THREE.Group{
 
     constructor(userRig, animatedObjects, speed, cubeSize, spawnRate){
         super();
 
+        // Game group containing animations
         var game = new THREE.Group();
         game.score = 0;
         game.started = false;
@@ -29,6 +32,7 @@ export class BeatSaber extends THREE.Group{
 
         var tunnelMat = new THREE.MeshLambertMaterial( {color: 0x7D8384, side: THREE.DoubleSide} );
 
+        // Tunnel floor and ceiling
         for(var j = 0; j < 2; ++j){
             var horizontalGeo = new THREE.PlaneBufferGeometry( 6, 30, 1 );
             var horizontal = new THREE.Mesh( horizontalGeo, tunnelMat );
@@ -37,6 +41,7 @@ export class BeatSaber extends THREE.Group{
             tunnel.add(horizontal);
         }
 
+        // Tunnel sides
         for(var j = 0; j < 2; ++j){
             var verticalGeo = new THREE.PlaneBufferGeometry(28, 4, 1);
             var vertical = new THREE.Mesh(verticalGeo, tunnelMat);
@@ -51,6 +56,7 @@ export class BeatSaber extends THREE.Group{
         back.position.set(0, 2.05, -16);
         tunnel.add(back);
 
+        // Buffer geometry arrows to show direction of cubes
         var arrowGeo = new THREE.BufferGeometry();
         var vertices = new Float32Array( [
              1, 3, 0,
@@ -104,6 +110,7 @@ export class BeatSaber extends THREE.Group{
             back.add(text);
 	    });
 
+        // Pillars at beginning of tunnel
         var pillarGeo = new THREE.CylinderBufferGeometry( 0.05, 0.05, 4.1, 32 );
         var pillarMat = new THREE.MeshLambertMaterial( {color: 0x0000ff} );
 
@@ -120,6 +127,7 @@ export class BeatSaber extends THREE.Group{
         var geometry = new THREE.CylinderBufferGeometry( 0.05, 0.05, 6, 32 );
         var material = new THREE.MeshLambertMaterial( {color: 0xff0000} );
 
+        // Horizontal parts of window
         for(var j = 0; j < 2; ++j){
             var width = new THREE.Mesh( geometry, material );
             width.position.y = 0.05 + j * 4;
@@ -129,6 +137,7 @@ export class BeatSaber extends THREE.Group{
 
         geometry = new THREE.CylinderBufferGeometry( 0.05, 0.05, 4.1, 32 );
 
+        // Vertical parts of window
         for(var j = 0; j < 2; ++j){
             var height = new THREE.Mesh( geometry, material );
             height.position.y = 2.05;
@@ -148,7 +157,7 @@ export class BeatSaber extends THREE.Group{
         var instText;
         var fontLoader = new THREE.FontLoader();
 	    fontLoader.load('../extern/fonts/helvetiker_bold.typeface.json', function (font){
-	        var instTextGeo = new THREE.TextBufferGeometry("Welcome to Beat Saber 2.0 !\n\nYour goal is to hit as many cubes flying at you with\nyou awesome lightsaber. You can adjust the speed\nof the flying cubes, their size and the time gap between\ntheir spawns.\nWhenever you are ready to play, toggle on the START\nbutton and you will get your lightsaber and the game\nwill start.\n\nPro tip: Try to use the tip of the lightsaber and stab\nthe cubes, slicing may not always be the best move\neven though it looks cool ;)\n\nHave fun!", {
+	        var instTextGeo = new THREE.TextBufferGeometry("Welcome to Beat Saber 2.0 !\n\nYour goal is to hit as many cubes flying at you with\nyou awesome lightsaber. You can adjust the speed\nof the flying cubes, their size and the time gap between\ntheir spawns.\nWhenever you are ready to play, toggle on the START\nbutton and you will get your lightsaber and the game\nwill start. To end the game, toggle it back off.\n\nPro tip: Try to use the tip of the lightsaber (hitbox is\ncloser to its end) and stab\nthe cubes, slicing may not always be the best move\neven though it looks cool ;)\n\nHave fun!", {
 		        font: font,
 		        size: 0.05,
 		        height: 0.01,
@@ -158,7 +167,7 @@ export class BeatSaber extends THREE.Group{
             instText = new THREE.Mesh(instTextGeo, instTextMat);
             instText.position.z = 0.1;
             instText.position.x = -0.9;
-            instText.position.y = 0.5;
+            instText.position.y = 0.6;
             instBack.add(instText);
         });
         
@@ -175,7 +184,8 @@ export class BeatSaber extends THREE.Group{
 	        sound.setVolume( 0.5 );
         });
 
-        const loader = new THREE.TextureLoader();
+        // Light saber modeled in THREE JS by me
+        /*const loader = new THREE.TextureLoader();
 
         var saber = new THREE.Group();
         var handleGeo = new THREE.CylinderBufferGeometry( 0.07, 0.07, 0.3, 32 );
@@ -190,18 +200,46 @@ export class BeatSaber extends THREE.Group{
         var light = new THREE.Mesh(lightGeo, lightMat);
 
         light.position.y = 2.3 / 2;
-        saber.add(light);
+        saber.add(light);*/
 
+        // Light saber downloaded at 'https://sketchfab.com/3d-models/lightsaber-1e95a8ccbbfe4732891eb76a683e9c29'
+        var saber = new THREE.Group();
+        var loader = new GLTFLoader().setPath('../extern/models/lightsaber/');
+        // Load a glTF resource
+        loader.load(
+        'scene.gltf',
+        (gltf) => {
+        gltf.scene.scale.set(0.02, 0.02, 0.02);
+        const box = new THREE.Box3().setFromObject( gltf.scene );
+        const center = box.getCenter( new THREE.Vector3() );
+        gltf.scene.position.x += ( gltf.scene.position.x - center.x );
+        gltf.scene.position.y += ( gltf.scene.position.y - center.y );
+        gltf.scene.position.z += ( gltf.scene.position.z - center.z );
+        saber.add(gltf.scene);
+        },
+        (xhr) => {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+        },
+        (error) => {
+        console.log( 'An error happened' );
+        console.log(error);
+        }
+        );
+
+        saber.position.z = -0.5;
+        saber.position.y = 0.4;
+
+        // Create light saber's hitbox sphere
         var sphereGeo = new THREE.SphereBufferGeometry( game.cubeSize + 0.2, 32, 32 );
         var sphereMat = new THREE.MeshBasicMaterial( {color: 0xffff00, visible: false} );
         var hitBoxSphere = new THREE.Mesh(sphereGeo, sphereMat);
-        hitBoxSphere.position.y = 2.3 - (game.cubeSize + 0.2);
+        hitBoxSphere.position.y = 1.1 - (game.cubeSize + 0.2) ;
         hitBoxSphere.radius = game.cubeSize + 0.1;
         saber.hitBox = hitBoxSphere;
         saber.rotation.x = THREE.Math.degToRad(-45);
         saber.add(hitBoxSphere);
 
-        //game.pointer;
+        // Game animation loop
         game.setAnimation(
             function(dt){
                 if(this.t == undefined){
@@ -212,6 +250,8 @@ export class BeatSaber extends THREE.Group{
                 if(!this.started) return;
 
                 //console.log("Testing, CHILDREN: " + this.cubes.length);
+
+                // Check for cube hit
                 for(var i = 0; i < this.cubes.length; ++i){
                     if(spheresIntersect(saber.hitBox, this.cubes[i].hitBox)){
                         this.score += 1;
@@ -219,6 +259,7 @@ export class BeatSaber extends THREE.Group{
                         this.cubes.shift();
                         console.log("Score: " + this.score);
 
+                        // Update score
                         back.remove(text);
                         var fontLoader = new THREE.FontLoader();
                         fontLoader.load('../extern/fonts/helvetiker_bold.typeface.json', function (font){
@@ -237,6 +278,7 @@ export class BeatSaber extends THREE.Group{
                     }
                 }
 
+                // Spawn new cube
                 if(Math.floor(this.t) % game.spawnRate == 0){
                     this.t = Math.ceil(this.t);
 
@@ -245,6 +287,7 @@ export class BeatSaber extends THREE.Group{
                     var cube = new THREE.Mesh( geometry, material );
                     cube.position.set(getRandom(-2.2 + game.cubeSize, 2.1 - game.cubeSize), getRandom(0.05 + game.cubeSize, 1.4 + 2.1 - game.cubeSize), window.position.z);
 
+                    // Cube hitbox sphere
                     sphereGeo = new THREE.SphereBufferGeometry( 0.73 * game.cubeSize, 32, 32 );
                     sphereMat = new THREE.MeshBasicMaterial( {color: 0xffff00, visible: false} ); // visible true to show hitbox
                     var hitBoxSphere = new THREE.Mesh(sphereGeo, sphereMat);
@@ -256,6 +299,8 @@ export class BeatSaber extends THREE.Group{
                     //console.log("Added, CHILDREN: " + this.cubes.length);
 
                     this.add(cube); 
+
+                    // Cube animation loop
                     cube.setAnimation(
                         function (dt){
                         if (this.t == undefined){
@@ -277,15 +322,12 @@ export class BeatSaber extends THREE.Group{
                         }
                         });
                         animatedObjects.push(cube);
-                        }
-                        
-                        
+                        }       
                 }
-            
         )
-       // animatedObjects.push(game);   
         
-       var platform = new USER.UserPlatform(
+        // Platform for user to stand on
+        var platform = new USER.UserPlatform(
         userRig,
         function (){
             console.log("Landing at Beat Saber game");            
@@ -297,11 +339,15 @@ export class BeatSaber extends THREE.Group{
             controller.remove(saber);
             // Remove special animation attached to controller.
             controller.setAnimation(undefined);
+            // Turn off sound
+            if(sound.isPlaying) sound.stop();
         }
         );
         this.add(platform);
 
-        // Make a GUI sign.
+        var inited = false;
+
+        // GUI design
         var buttons = [new GUIVR.GuiVRButton("Speed", game.speed, 1, 3, false,
                          function(x){
                             if(inited) game.speed = x;
@@ -327,6 +373,7 @@ export class BeatSaber extends THREE.Group{
                             if(inited) game.spawnRate = x;
                          }) 
                     ];
+
         var sign = new GUIVR.GuiVRMenu(buttons);
         sign.position.x = -2;
         sign.position.z = -3;
@@ -334,8 +381,7 @@ export class BeatSaber extends THREE.Group{
         sign.rotation.y = THREE.Math.degToRad(25);
         game.add(sign);
 
-        var inited = false;
-
+        // START button design
         var startSign = new GUIVR.GuiVRMenu([new GUIVR.GuiVRButton("START", 0, 0, 1, true,
                     function(x){
                         if(x == 1){
@@ -352,7 +398,7 @@ export class BeatSaber extends THREE.Group{
 
                                 game.remove(instBack)
 
-                                // Map lightsaber to controler and turn off raycaster
+                                // Map lightsaber to controler and turn off raycaster (controller code in User.js doesn't work)
                                 /*let controller = userRig.getController(0);
                                 if(userRig.controllers.length == 1){
                                     controller.add(saber);
@@ -381,7 +427,6 @@ export class BeatSaber extends THREE.Group{
 
                                 let controller = userRig.getController(0);
                                 controller.remove(saber);
-                                controller.add(game.pointer);
 
                                 console.log("Resetting scoreboard");
                                 back.remove(text);
@@ -414,6 +459,7 @@ export class BeatSaber extends THREE.Group{
     }
 }   
 
+// Function to determine if two spheres intersect in order to determine light saber hitting cube
 function spheresIntersect(sphere1, sphere2){
     var vec1 = new THREE.Vector3();
     var vec2 = new THREE.Vector3();
@@ -428,7 +474,7 @@ function spheresIntersect(sphere1, sphere2){
     return vec1.distanceTo(vec2) <= (sphere1.radius + sphere2.radius);
 }
 
-
+// Get random float between min and max
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
 }

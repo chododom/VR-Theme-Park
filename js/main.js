@@ -6,19 +6,12 @@
 
 import * as THREE from '../extern/build/three.module.js';
 import { VRButton } from '../extern/VRButton.js';
-import {DebugConsole, debugWrite} from './DebugConsole.js';
-import * as DEBUG from './DebugHelper.js';
 import * as GUIVR from './GuiVR.js';
 import * as ANIMATOR from './Animator.js';
 import * as USER from './User.js';
 import * as FERRIS from './FerrisWheel.js'
 import * as BEAT from './BeatSaber.js'
-import { OrbitControls } from '../extern/OrbitControls.js';
-// Imports for model loading.  The import depends on the model file type.
-// There are other model types that can be loaded.
 import {FBXLoader}  from '../extern/examples/jsm/loaders/FBXLoader.js'; 
-//import {GLTFLoader}  from '../extern/examples/jsm/loaders/GLTFLoader.js';
-//import {OBJLoader}  from '../extern/examples/jsm/loaders/OBJLoader.js';
 
 
 // Global variables for high-level program state.
@@ -403,7 +396,7 @@ function initExhibit5(userRig){
 function initExhibit6(userRig){
 
     // Recommended parameters
-    var exhibit = new BEAT.BeatSaber(userRig, animatedObjects, 1.5, 0.3, 10);
+    var exhibit = new BEAT.BeatSaber(userRig, animatedObjects, 1.5, 0.4, 8);
     
     // Pose the exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(-90);
@@ -423,7 +416,7 @@ function initExhibit6(userRig){
     scene.add(exhibit2);
 
     // Param demo 2
-    var exhibit3 = new BEAT.BeatSaber(userRig, animatedObjects, 1, 0.5, 20);
+    var exhibit3 = new BEAT.BeatSaber(userRig, animatedObjects, 1, 0.3, 20);
     
     // Pose the exhibit.
     exhibit3.rotation.y = THREE.Math.degToRad(-90);
