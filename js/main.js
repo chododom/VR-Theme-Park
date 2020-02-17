@@ -381,7 +381,7 @@ function initExhibit5(userRig){
 
 function initExhibit6(userRig){
 
-    var exhibit = new BEAT.BeatSaber(userRig, animatedObjects);
+    var exhibit = new BEAT.BeatSaber(userRig, animatedObjects, 0.8, 0.3, 10);
     
     // Pose the exhibit.
     exhibit.rotation.y = THREE.Math.degToRad(-90);
