@@ -1,0 +1,55 @@
+CSC 385 - Project 2
+
+Name: Dominik Chodounsky
+
+Part 1   50/50
+
+ + Class       10/10
+   - Constructor     3/03
+   - Parameters      3/03 - You don't need to pass animatedObjects, it will recursively traverse the scene graph of the FerrisWheel if you add it in main.js
+   - Self contained  3/03
+   - Inherits Group  1/01
+   
+ + Model       38/37
+   - Animated        8/08
+   - >= two levels   6/06
+   - Geometry        6/06
+   - Connected       2/02
+   - Uses add()      4/04
+   - Control speed   4/04
+   - Face motion     2/02
+   - Aesthetics      6/05 - Nice model!
+   
+ + Demos         3/03
+
+ + Awesomeness   /?? (EC)
+
+
+Part 2   53/50
+
+ + Class       12/12
+   - Constructor     3/03
+   - Parameters      3/03
+   - Self contained  5/05
+   - Inherits Group  1/01
+
+ + Game        34/35
+   - Start platform  2/02
+   - Interaction     9/10 - Make the lightsaber align with the pointer.  You could add more spheres to collision detetion of the lightsaber, so as to be more realistic.
+   - Game logic      6/06
+   - Custom geometry 4/04
+   - Animated        4/04
+   - Display score   3/03
+   - Instructions    1/01
+   - Aesthetics      5/05
+
+ + Demos        3/03
+
+
+ + Awesomeness  4/?? (EC) - You got sound working in VR.  (Though we probably can't use this audio in a public demo because of copyright issues.)
+
+
+Total  104/100 - Excellent work!  
+
+
+
