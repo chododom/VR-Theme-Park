@@ -14,4 +14,3 @@ Project created in CSC 385 (Computer Graphics) at Union College, NY, USA. The go
 - plays better on the Oculus Quest and HTC Vive, addittional DOF for headset make it easier to reach cubes and line up hitboxes, but the Go works too
 - as for raycaster lasers, I wanted to make the controller pointer disappear, but the controller class acts strangely, the User.controllers does not include only one
 controller for the Go, so I can't tell which device is being used, therefore to keep the option of ending the game from the Go as well (other two could use controller without mapped lightsaber to point and click), there is always a laser as well as the lightsaber
-- (fun fact: I was this close *shows tiny distance between fingers* to adding dancing storm troopers to my game, but decided to respect your wishes not to see any of those)
