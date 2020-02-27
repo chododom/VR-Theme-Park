@@ -1,4 +1,5 @@
-# PROJECT 2
+# VR Theme park
+Project created in CSC 385 (Computer Graphics) at Union College, NY, USA. The goal was to use THREE JS to create a VR theme park with a ride (I chose a ferris wheel) and a game (I recreated a simple version of Beatsaber).
 
 ## Ferris Wheel exhibit
 - adjustable parameters: wheel shape, cabin count, speed, direction
